@@ -1,4 +1,4 @@
-# Velvet-Creator
+# Video Captioning at Scale with Ray Data
 
 Video captioning pipeline built with Ray Data. Two interchangeable GPU
 backends — HuggingFace transformers vs Ray Data LLM with vLLM — for
