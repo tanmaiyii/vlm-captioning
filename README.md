@@ -192,16 +192,15 @@ run is checked into the repo:
 
 ```
 output/
-└── captions-transformers/
-    ├── preview.csv     # first 100 rows, browsable
-    ├── preview.json    # same 100 rows in JSON for IDE pretty-print
-    └── <shard>.parquet # the canonical first parquet shard
+├── preview.csv     # first 100 rows, browsable
+├── preview.json    # same 100 rows in JSON for IDE pretty-print
+└── <shard>.parquet # the canonical first parquet shard from the transformers run
 ```
 
-**No `output/captions-vllm/`** — the vLLM full run was deferred this
-round (every caption came out identical, suspected `max_model_len=4096`
-truncating image tokens before the LLM saw them). The vLLM code path
-is still in the repo (`src/velvet/captioner.py:caption_with_vllm`,
+**Only the transformers backend is committed** — the vLLM full run was
+deferred this round (every caption came out identical, suspected
+`max_model_len=4096` truncating image tokens before the LLM saw them).
+The vLLM code path is still in the repo (`src/velvet/captioner.py:caption_with_vllm`,
 notebook §4b, `--backend vllm` CLI flag); WRITEUP §"What I'd do
 differently" #3 documents the fix sketch.
 

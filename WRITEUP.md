@@ -134,19 +134,19 @@ Artefacts: `runs/main_transformers.{log,raystatus.log,metrics.json}`.
 
 | Backend | Wall (s) | Throughput (vid/s) | Notes |
 |---|---|---|---|
-| transformers | _full-run wall_ | _full-run vid/s_ | bounded by `model.generate()`; both T4s saturated |
-| vLLM | _deferred_ | _deferred_ | full run deferred pending caption-quality bug (#3 below) |
+| transformers | **3221** (53.7 min) | **0.621** | both T4s saturated; GPU = long pole |
+| vLLM | deferred | deferred | full run deferred pending caption-quality bug (#3 below) |
 
-**Sweep extrapolation.** From the 30-video sweep at b=8 (114.6 s pipeline,
-0.262 vid/s), 2,000 videos extrapolates to ~127 minutes — but that
-overestimates because the model-load cost (~30 s of wall) amortises
-across many more batches at the full scale. Realistic prediction:
-2,000 / 0.262 - amortised_model_load ≈ 110-120 min. **Way over the
-spec's 15-45 min target if so.** Two factors expected to compress
-this: (a) at 2,000 videos the read+decode pipeline has more
-opportunity to overlap with caption (the streaming executor's whole
-point), and (b) Ray Data's actor reuse should keep the model warm
-across blocks. The full-run wall-clock above is the actual number.
+**Sweep vs. full-run reality.** The 30-video sweep at b=8 measured
+0.262 vid/s — naively that extrapolated to ~127 min for 2,000 videos.
+The actual full run came in at **0.621 vid/s** (53.7 min). The 2.4×
+speedup vs the sweep prediction is the streaming executor doing its
+job: at 30 videos, model-load + ramp dominate; at 2,000 videos those
+costs amortise and Ray Data's stage overlap (decode N+1 starting while
+caption N runs) is fully expressed. **53.7 min is slightly above the
+spec's 15-45 min target** — see §"What I'd do differently" for the
+two near-term experiments (b=16, +GPU actors) that would bring it
+inside spec.
 
 **GPU utilisation in steady state.** Captured via
 `runs/main_transformers.raystatus.log` (15s polling): both T4s pinned
@@ -201,7 +201,7 @@ would close the loop.
 **With another day, in priority order:**
 
 1. **Push throughput inside the 15–45 min spec window.** The full
-   2000-video transformers run landed at ~60 min wall — slightly
+   2000-video transformers run landed at 53.7 min wall (0.621 vid/s) — slightly
    above the spec's upper bound. Two cheap experiments to try:
    (a) **b=16**: the b=8 → b=16 jump is the next unmeasured rung,
    and the b=4 → b=8 curve had already flattened, so the gain
