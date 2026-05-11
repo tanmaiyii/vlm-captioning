@@ -1,4 +1,4 @@
-# Velvet-Creator — Writeup
+# Video Captioning at Scale with Ray Data — Writeup
 
 Per the spec: 1-2 pages on architecture, sizing, observed throughput,
 what I'd do differently, and what surprised me. Long-form rationale
