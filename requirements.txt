@@ -1,0 +1,63 @@
+# Python deps — open lower bounds so `pip install -r requirements.txt`
+# resolves to the latest stable release for each package.
+#
+# Target environment (matches Containerfile FROM line):
+#   - Python 3.13
+#   - CUDA 12.9 driver (torch wheels build against cu130; forward-compatible)
+#   - Base image: anyscale/ray:2.55.1-slim-py313-cu129
+# Anything older may work but isn't tested.
+#
+# Why no upper pins: every upper bound we tried during development
+# (e.g. transformers<5, vllm==0.10) blocked a newer release that
+# fixed a real bug or API mismatch on the next layer. Lower-only
+# constraints keep this repo installable a year from now without
+# manual edits, and the Containerfile freezes a deterministic
+# build for reproducible deploys.
+
+# --- Required: Ray Data orchestration ---
+ray[data]>=2.55.0               # [data] extra ensures pyarrow/pandas/fsspec
+torch>=2.0                      # fp16 inference on T4
+
+# --- numpy ---
+# Historically pinned to <2 because Ray Data LLM's vLLM worker
+# runtime env shipped C extensions built against numpy 1.x ABI,
+# which raised "numpy.core.multiarray failed to import" when the
+# driver had numpy 2.x. Verified resolved at Ray 2.55.1 + vLLM
+# 0.14.0: a clean venv with numpy 2.2.6 + ray.data.llm +
+# vllm.multimodal imports cleanly and constructs
+# vLLMEngineProcessorConfig without ABI errors. Pin removed so the
+# resolver picks numpy 2.x, which (a) matches the base image's
+# default numpy 2.2.6 (avoiding a downgrade step on every install)
+# and (b) is required for Python 3.13 since no numpy 1.x wheel
+# ships cp313.
+
+# --- Required: video decode ---
+av                              # PyAV: thin wrapper around ffmpeg
+
+# --- Required: image preprocessing ---
+pillow                          # also a transitive HF processor dep
+
+# --- Required: Backend A (HuggingFace transformers) ---
+# Lower bound 4.53.2 is required by current vLLM. The image-API
+# code path is stable across 4.x and 5.x, so no upper bound needed.
+transformers>=4.53.2            # SmolVLM2-Video + vLLM compat
+accelerate                      # required by device_map= in from_pretrained
+huggingface_hub                 # model download
+num2words                       # SmolVLM2 transitive dep (often forgotten)
+
+# --- Required: Backend B (vLLM via Ray Data LLM) ---
+# Lower bound only — older vllm versions don't accept newer Ray-passed
+# kwargs (e.g. `enable_log_requests`), raising AsyncEngineArgs TypeError.
+vllm>=0.10.0                    # multimodal video model
+
+# --- Required: I/O ---
+smart_open[s3]                  # unified s3:// / local path
+
+# --- Optional: only for build_manifest.py when listing S3 prefixes ---
+# Skip this if your manifest is hand-curated or generated elsewhere.
+boto3
+
+# --- Optional: notebook walkthrough ---
+# Skip this for production deployments; needed only for explore.ipynb.
+jupyter
+ipython

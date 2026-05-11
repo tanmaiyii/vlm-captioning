@@ -1,0 +1,29 @@
+# --- internal working docs (not part of submission) ---
+# CLAUDE.md is internal coordination for the AI assistant; not for reviewers.
+# SLIDES_OUTLINE.md is presentation prep, kept locally only.
+# CHANGES.md is the per-session audit trail, kept locally only.
+CLAUDE.md
+SLIDES_OUTLINE.md
+CHANGES.md
+
+# --- run artefacts (regenerable, large) ---
+runs/
+
+# --- python / IDE detritus ---
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# --- notebook backup files from rebuilds ---
+notebooks/*.ipynb.bak
+
+# --- local virtualenvs ---
+.venv/
+venv/
+
+# --- generated benchmark artefacts ---
+benchmark_results.json
+benchmark_table.md
+sweep_results.json
+sweep_table.md
