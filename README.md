@@ -34,9 +34,7 @@ parallel implementation.
 ├── build_manifest.py        # CSV manifest from S3 or local dir
 ├── requirements.txt         # pinned Python deps
 ├── Containerfile            # cluster image (adds ffmpeg, sets vLLM env)
-├── CLAUDE.md               # constraints for Claude Code
 ├── WRITEUP.md              # design rationale + benchmarks (the rubric)
-├── SLIDES_OUTLINE.md       # 30-min presentation outline
 └── README.md               # this file
 ```
 
